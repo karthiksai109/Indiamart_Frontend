@@ -72,6 +72,8 @@ We welcome contributions! To contribute:
 3. Commit your changes.
 4. Push to your branch and create a Pull Request.
 
+##Deployment:
+link: https://indiamart-frontend-liard.vercel.app/
 
 
 ## 📞 Contact
