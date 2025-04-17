@@ -2,6 +2,7 @@
 import React, { useState,useEffect } from 'react';
 import './Home.css';
 import BudgetTool from "../components/BudgetTool"
+
 import { useNavigate } from 'react-router-dom'
 
 const Home = () => {
@@ -21,10 +22,10 @@ const [userName, setUserName] = useState('');
     const [cart, setCart] = useState([]);
 
     const products = [
-        { id: 1, name: 'Traditional Clothes', image: 'https://via.placeholder.com/300x200?text=TraditionalClothes' },
-        { id: 2, name: 'Indian Foods', image: 'https://via.placeholder.com/300x200?text=spices' },
-        { id: 3, name: 'Kitchenware', image: 'https://via.placeholder.com/300x200?text=Kitchenware' },
-        { id: 4, name: 'Indian Meat', image: 'https://via.placeholder.com/300x200?text=IndianMeat' },
+        { id: 1, name: 'Traditional Clothes', image: 'img1' },
+        { id: 2, name: 'Indian Foods', image: 'img2' },
+        { id: 3, name: 'Kitchenware', image: 'img3' },
+        { id: 4, name: 'Indian Meat', image: 'img4' },
     ];
 
     const handleBudgetFilter = () => {
