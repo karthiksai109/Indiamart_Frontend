@@ -204,8 +204,9 @@ const Cart = () => {
             if(!userId){
                 localStorage.removeItem("cart");
                 alert("Please login to place your order...");
-                navigate('https://indiamart-frontend-dlqw.vercel.app/login')
+                navigate('/login')
                 window.location.reload();
+                return
             }
             else{
             // Clear cart
