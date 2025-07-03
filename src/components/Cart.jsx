@@ -204,9 +204,8 @@ const Cart = () => {
             if(!userId){
                 localStorage.removeItem("cart");
                 alert("Please login to place your order...");
-                navigate('/login')
+                navigate('/');
                 window.location.reload();
-                return
             }
             else{
             // Clear cart
