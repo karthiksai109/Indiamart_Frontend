@@ -1,24 +1,4 @@
-/* .title_signin{
-    border:1px solid black;
-    padding:50px;
-    margin-left:400px;
-    border-radius: 10px;
-}
-#header{
-    margin-left:550px;
-    margin-top:0px;
-    color:orange;
 
-}
-#btn{
-    background-color: orange;
-    margin-top: 20PX;
-    border-radius: 5PX;
-    padding-right: 160px;
-    padding-left: 150px;
-} */
-
-/* Reset Styles */
 * {
     margin: 0;
     padding: 0;
@@ -31,7 +11,7 @@
     background: linear-gradient(to bottom, #f4a261, #2a0849);
     height: 100vh;
     display: flex;
-    padding: 100px 440px;
+    padding: 100px 760px;
     justify-content: center;
     align-items: center;
 }

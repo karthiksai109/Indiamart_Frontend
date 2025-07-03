@@ -1,9 +1,9 @@
 .cart-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 25px;
   background-color: #f9f9f9;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
 }
@@ -16,7 +16,7 @@
 
 .cart-container ul {
   list-style-type: none;
-  padding: 0;
+  margin-bottom: 600px;
 }
 
 .cart-item {
