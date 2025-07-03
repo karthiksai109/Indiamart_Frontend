@@ -80,7 +80,7 @@ const Home = () => {
                 </div>
                 <div className="user-actions">
                     {!userName ? (
-                        <button onClick={() => navigate('/login')} className="auth-button">Login</button>
+                        <button onClick={() => navigate('/register')} className="auth-button">Sign Up</button>
                     ) : (
                         <button onClick={handleLogout} className="auth-button">Logout</button>
                     )}

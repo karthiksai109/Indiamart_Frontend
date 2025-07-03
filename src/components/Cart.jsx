@@ -194,22 +194,26 @@ const Cart = () => {
         const token = localStorage.getItem("token");
 
         try {
-            await fetch(`https://indiamart-backend-3.onrender.com/user/${userId}/updateOrders`, {
+            await fetch(`https://indiamart-backend-4.onrender.com/user/${userId}/updateOrders`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
                 }
             });
-
+            if(!userId){
+                localStorage.removeItem("cart");
+                alert("Please login to place your order...");
+                navigate('/login')
+                window.location.reload();
+            }
+            else{
             // Clear cart
             localStorage.removeItem("cart");
             alert("Payment complete! Redirecting to home...");
-           
-
-
             navigate('/'); // 👈 Hard reload the page to reset all state
             window.location.reload();
+            }
             
         } catch (error) {
             alert("Payment failed.");
