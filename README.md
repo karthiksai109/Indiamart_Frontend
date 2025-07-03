@@ -73,7 +73,7 @@ We welcome contributions! To contribute:
 4. Push to your branch and create a Pull Request.
 
 ##Deployment:
-link: https://indiamart-frontend-dlqw.vercel.app/
+link: https://indiamart-frontend-r79b.vercel.app/
 
 ## 📞 Contact
 For any queries or collaborations, reach out to:
