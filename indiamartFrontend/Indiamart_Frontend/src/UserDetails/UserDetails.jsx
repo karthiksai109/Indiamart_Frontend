@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 import './UserDetails.css';
 
 function UserDetails() {
@@ -20,7 +21,7 @@ function UserDetails() {
                     return;
                 }
 
-                const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://indiamart3-backend.onrender.com'}/user/${userId}/profile`, {
+                const res = await fetch(`${API_BASE}/user/${userId}/profile`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': "application/json",
@@ -72,7 +73,7 @@ function UserDetails() {
 
         try {
             // const res = await fetch(`https://indiamart3-backend.onrender.com/user/${userId}/profile`, {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://indiamart3-backend.onrender.com'}/user/${userId}/profile`, {
+            const res = await fetch(`${API_BASE}/user/${userId}/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
