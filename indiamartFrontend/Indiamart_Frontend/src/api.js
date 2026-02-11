@@ -8,13 +8,28 @@ const authHeaders = () => {
   };
 };
 
+async function safeJson(res) {
+  const text = await res.text();
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    throw new Error(
+      text.startsWith('<') ? 'Server returned a page instead of data. Is the backend running at ' + API_BASE + '?' : text || 'Invalid response'
+    );
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('Invalid JSON from server.');
+  }
+}
+
 export const setBudget = async (userId, token, budget) => {
   const response = await fetch(`${API_BASE}/user/${userId}/budget`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ budget }),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const getBudget = async (userId, token) => {
@@ -22,7 +37,7 @@ export const getBudget = async (userId, token) => {
     method: 'GET',
     headers: authHeaders(),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const validateCartBudget = async (userId, token) => {
@@ -30,28 +45,28 @@ export const validateCartBudget = async (userId, token) => {
     method: 'GET',
     headers: authHeaders(),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const getProducts = async (query = {}) => {
   const params = new URLSearchParams(query).toString();
   const response = await fetch(`${API_BASE}/products${params ? `?${params}` : ''}`);
-  return response.json();
+  return safeJson(response);
 };
 
 export const getAllProducts = async () => {
   const response = await fetch(`${API_BASE}/allp`);
-  return response.json();
+  return safeJson(response);
 };
 
 export const getProduct = async (productId) => {
   const response = await fetch(`${API_BASE}/product/${productId}`);
-  return response.json();
+  return safeJson(response);
 };
 
 export const getPriceHistory = async (productId) => {
   const response = await fetch(`${API_BASE}/product/${productId}/price-history`);
-  return response.json();
+  return safeJson(response);
 };
 
 export const getBudgetPlans = async (budget) => {
@@ -61,7 +76,7 @@ export const getBudgetPlans = async (budget) => {
     headers: authHeaders(),
     body: JSON.stringify({ budget: parseFloat(budget) }),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const createOrder = async (items, totalAmount, address) => {
@@ -70,7 +85,7 @@ export const createOrder = async (items, totalAmount, address) => {
     headers: authHeaders(),
     body: JSON.stringify({ items, totalAmount, address }),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const getMyOrders = async () => {
@@ -78,7 +93,7 @@ export const getMyOrders = async () => {
     method: 'GET',
     headers: authHeaders(),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const createPaymentOrder = async (amount, orderId) => {
@@ -87,7 +102,7 @@ export const createPaymentOrder = async (amount, orderId) => {
     headers: authHeaders(),
     body: JSON.stringify({ amount, orderId, currency: 'INR' }),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const verifyPayment = async (payload) => {
@@ -96,7 +111,7 @@ export const verifyPayment = async (payload) => {
     headers: authHeaders(),
     body: JSON.stringify(payload),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const addToWishlist = async (productId, notifyOnPriceDrop = true, targetPrice) => {
@@ -105,7 +120,7 @@ export const addToWishlist = async (productId, notifyOnPriceDrop = true, targetP
     headers: authHeaders(),
     body: JSON.stringify({ productId, notifyOnPriceDrop, targetPrice }),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const removeFromWishlist = async (productId) => {
@@ -113,7 +128,7 @@ export const removeFromWishlist = async (productId) => {
     method: 'DELETE',
     headers: authHeaders(),
   });
-  return response.json();
+  return safeJson(response);
 };
 
 export const getWishlist = async () => {
@@ -121,5 +136,5 @@ export const getWishlist = async () => {
     method: 'GET',
     headers: authHeaders(),
   });
-  return response.json();
+  return safeJson(response);
 };
