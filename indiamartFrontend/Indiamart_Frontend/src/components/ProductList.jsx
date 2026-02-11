@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllProducts } from '../api';
+import { Heart } from 'lucide-react';
+import { getAllProducts, addToWishlist } from '../api';
 import './ProductList.css';
 
 const ProductList = ({ addToCart }) => {
@@ -10,6 +11,8 @@ const ProductList = ({ addToCart }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [favIds, setFavIds] = useState(() => new Set());
+  const [savingId, setSavingId] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -42,6 +45,29 @@ const ProductList = ({ addToCart }) => {
   if (loading) return <div className="product-list-container"><p className="loading-msg">Loading products…</p></div>;
   if (error) return <div className="product-list-container"><p className="error-msg">Error: {error}</p></div>;
 
+  const handleFavorite = async (product) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    try {
+      setSavingId(product._id);
+      const res = await addToWishlist(product._id, true);
+      if (res?.status) {
+        setFavIds((prev) => {
+          const next = new Set(prev);
+          next.add(product._id);
+          return next;
+        });
+      }
+    } catch (e) {
+      alert(e.message || 'Could not add to wishlist.');
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   return (
     <div className="product-list-container">
       <div className="search-bar">
@@ -56,6 +82,16 @@ const ProductList = ({ addToCart }) => {
       <div className="product-grid">
         {filteredProducts.map((product) => (
           <div key={product._id} className="product-card pl-card">
+            <button
+              type="button"
+              className={`pl-fav ${favIds.has(product._id) ? 'active' : ''}`}
+              onClick={() => handleFavorite(product)}
+              disabled={savingId === product._id}
+              aria-label="Add to favourites"
+              title="Add to favourites"
+            >
+              <Heart size={18} />
+            </button>
             <div className="pl-card-image" onClick={() => navigate(`/product/${product._id}`)}>
               <img
                 src={product.imageUrl || 'https://via.placeholder.com/240'}
