@@ -7,26 +7,28 @@ const BudgetTool = ({ token }) => {
   const [budget, setBudget] = useState('');
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleCheckBudget = async () => {
     const num = parseFloat(budget);
+    setError('');
     if (!num || num <= 0) {
-      alert('Please enter a valid budget (₹).');
+      setError('Enter a valid budget (₹).');
       return;
     }
     setLoading(true);
     try {
       const data = await getBudgetPlans(num);
       if (data.status && data.plans && Array.isArray(data.plans)) {
-        setPlans(data.plans);
+        setPlans(data.plans.filter((p) => p && p.length > 0));
       } else {
         setPlans([]);
-        alert(data.message || 'No plans for this budget.');
+        setError(data.message || 'No plans for this budget.');
       }
     } catch (e) {
       setPlans([]);
-      alert('Something went wrong. Try again.');
+      setError(e.message || 'Check your connection. Is the backend running?');
     } finally {
       setLoading(false);
     }
@@ -41,36 +43,46 @@ const BudgetTool = ({ token }) => {
       else updated.push({ ...item, quantity: 1 });
     });
     localStorage.setItem('cart', JSON.stringify(updated));
-    alert('Items added to cart.');
+    window.dispatchEvent(new Event('cartUpdated'));
     navigate('/cart');
   };
 
   return (
     <div className="budget-tool-wrap">
       <div className="budget-tool-input">
-        <label>Enter your budget (₹)</label>
+        <label>Your budget (₹)</label>
         <input
           type="number"
           min="1"
+          step="100"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
           placeholder="e.g. 5000"
+          onKeyDown={(e) => e.key === 'Enter' && handleCheckBudget()}
         />
         <button type="button" className="btn-get-plans" onClick={handleCheckBudget} disabled={loading}>
           {loading ? 'Getting plans…' : 'Get plans'}
         </button>
       </div>
+      {error && <p className="budget-tool-error">{error}</p>}
 
       {plans.length > 0 && (
         <div className="budget-plans">
+          <p className="budget-plans-heading">Plans within your budget</p>
           {plans.map((plan, index) => {
             const total = plan.reduce((s, p) => s + (p.price || 0), 0);
             return (
               <div key={index} className="budget-plan-card">
-                <h4>Plan {index + 1} – ₹{total.toLocaleString('en-IN')}</h4>
-                <ul>
+                <div className="budget-plan-header">
+                  <span className="plan-badge">Plan {index + 1}</span>
+                  <span className="plan-total">₹{total.toLocaleString('en-IN')}</span>
+                </div>
+                <ul className="budget-plan-list">
                   {plan.map((item) => (
-                    <li key={item._id}>{item.name} – ₹{item.price?.toLocaleString('en-IN')}</li>
+                    <li key={item._id}>
+                      <span className="plan-item-name">{item.name}</span>
+                      <span className="plan-item-price">₹{item.price?.toLocaleString('en-IN')}</span>
+                    </li>
                   ))}
                 </ul>
                 <button type="button" className="btn-add-plan" onClick={() => handleAddToCart(plan)}>
