@@ -10,6 +10,7 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
+  // Always prefer localStorage so Budget Tool "Add to cart" shows immediately
   useEffect(() => {
     const stored = (() => {
       try {
@@ -19,8 +20,20 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
         return [];
       }
     })();
-    setCartItems(propCart !== undefined ? propCart : stored);
+    setCartItems(stored.length > 0 ? stored : (propCart || []));
   }, [propCart]);
+
+  // Sync when navigating to cart (e.g. from budget tool)
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const c = JSON.parse(localStorage.getItem('cart'));
+        setCartItems(Array.isArray(c) ? c : []);
+      } catch {}
+    };
+    window.addEventListener('cartUpdated', sync);
+    return () => window.removeEventListener('cartUpdated', sync);
+  }, []);
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
 
@@ -35,6 +48,7 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
     );
     setCartItems(updated);
     localStorage.setItem('cart', JSON.stringify(updated));
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleRemove = (item) => {
@@ -42,6 +56,7 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
     const updated = cartItems.filter((i) => i._id !== item._id);
     setCartItems(updated);
     localStorage.setItem('cart', JSON.stringify(updated));
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handlePayment = async () => {
@@ -144,68 +159,71 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
         <h2>Your Shopping Cart</h2>
         {cartItems.length === 0 ? (
           <div className="cart-empty">
-            <p>Your cart is empty.</p>
+            <p>Your cart is empty. Add items from Shop or the Budget Planner.</p>
             <button type="button" className="btn-shop" onClick={() => navigate('/shop')}>
               Shop Indian Essentials
             </button>
           </div>
         ) : (
-          <>
-            <ul className="cart-list">
-              {cartItems.map((item) => (
-                <li key={item._id} className="cart-item">
-                  <div className="item-details">
-                    <img
-                      src={item.imageUrl || 'https://via.placeholder.com/80'}
-                      alt={item.name}
-                      className="item-image"
-                    />
-                    <div className="item-info">
-                      <strong>{item.name}</strong>
-                      <span className="item-price">₹{(item.price * (item.quantity || 1)).toLocaleString('en-IN')}</span>
+          <div className="cart-layout">
+            <div className="cart-list-wrap">
+              <ul className="cart-list">
+                {cartItems.map((item) => (
+                  <li key={item._id} className="cart-item">
+                    <div className="item-details">
+                      <img
+                        src={item.imageUrl || 'https://via.placeholder.com/88'}
+                        alt={item.name}
+                        className="item-image"
+                      />
+                      <div className="item-info">
+                        <strong>{item.name}</strong>
+                        <span className="item-price">₹{(item.price * (item.quantity || 1)).toLocaleString('en-IN')}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="cart-actions">
-                    <button
-                      type="button"
-                      className="qty-btn"
-                      onClick={() => handleQuantity(item, -1)}
-                      aria-label="Decrease"
-                    >
-                      −
-                    </button>
-                    <span className="qty-value">{item.quantity || 1}</span>
-                    <button
-                      type="button"
-                      className="qty-btn"
-                      onClick={() => handleQuantity(item, 1)}
-                      aria-label="Increase"
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      className="remove-btn"
-                      onClick={() => handleRemove(item)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="cart-summary">
-              <strong>Total: ₹{totalAmount.toLocaleString('en-IN')}</strong>
+                    <div className="cart-actions">
+                      <button
+                        type="button"
+                        className="qty-btn"
+                        onClick={() => handleQuantity(item, -1)}
+                        aria-label="Decrease"
+                      >
+                        −
+                      </button>
+                      <span className="qty-value">{item.quantity || 1}</span>
+                      <button
+                        type="button"
+                        className="qty-btn"
+                        onClick={() => handleQuantity(item, 1)}
+                        aria-label="Increase"
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        className="remove-btn"
+                        onClick={() => handleRemove(item)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <button
-              type="button"
-              className="make-payment"
-              onClick={handlePayment}
-              disabled={loading}
-            >
-              {loading ? 'Processing…' : 'Proceed to Pay'}
-            </button>
-          </>
+            <div className="cart-summary-card">
+              <h3>Order total</h3>
+              <div className="cart-summary">₹{totalAmount.toLocaleString('en-IN')}</div>
+              <button
+                type="button"
+                className="make-payment"
+                onClick={handlePayment}
+                disabled={loading}
+              >
+                {loading ? 'Processing…' : 'Proceed to Pay'}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
