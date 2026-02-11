@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 import './register.css';
 
 const Register = () => {
@@ -19,7 +20,7 @@ const Register = () => {
         setError('');
         setSuccess(false);
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://indiamart3-backend.onrender.com'}/register`, {
+        const response = await fetch(`${API_BASE}/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fname, lname, email, address, password }),
