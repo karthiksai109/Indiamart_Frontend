@@ -1,0 +1,74 @@
+.user-details-container {
+  min-height: 100vh;
+  padding: 100px 24px 48px;
+  background: var(--bg-main);
+  font-family: var(--font-main);
+}
+
+.user-details-container h1 {
+  text-align: center;
+  color: var(--accent-gold);
+  margin-bottom: 28px;
+  font-size: 1.75rem;
+}
+
+.update-form {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.form-group input {
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text-main);
+  font-family: var(--font-main);
+}
+
+.form-group input:read-only {
+  opacity: 0.8;
+}
+
+.user-details-container button[type="submit"] {
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-coral));
+  color: #000;
+  cursor: pointer;
+  font-family: var(--font-main);
+  margin-top: 8px;
+}
+
+.user-details-container button[type="submit"]:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.loading-message {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 48px;
+}

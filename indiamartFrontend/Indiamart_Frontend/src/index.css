@@ -1,0 +1,49 @@
+/* IndiaMart – Global theme (custom palette, no generic defaults) */
+:root {
+  --bg-main: #0b0b0b;
+  --bg-soft: #121212;
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --text-main: #f5f5f5;
+  --text-muted: #b0b0b0;
+  --accent-gold: #d4af37;
+  --accent-coral: #ff6f61;
+  --border-soft: rgba(255, 255, 255, 0.15);
+  --font-main: 'Outfit', system-ui, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent-gold);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-coral);
+}
+
+button {
+  font-family: var(--font-main);
+  cursor: pointer;
+}
+
+input, textarea {
+  font-family: var(--font-main);
+}
