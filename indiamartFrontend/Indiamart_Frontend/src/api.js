@@ -10,16 +10,17 @@ const authHeaders = () => {
 
 async function safeJson(res) {
   const text = await res.text();
-  const ct = res.headers.get('content-type') || '';
-  if (!ct.includes('application/json')) {
-    throw new Error(
-      text.startsWith('<') ? 'Server returned a page instead of data. Is the backend running at ' + API_BASE + '?' : text || 'Invalid response'
-    );
+  if (!text) {
+    if (res.ok) return { status: true };
+    throw new Error('Empty response from server.');
   }
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error('Invalid JSON from server.');
+    if (text.startsWith('<')) {
+      throw new Error('Server returned a page instead of data. Is the backend running at ' + API_BASE + '?');
+    }
+    throw new Error(text || 'Invalid response from server.');
   }
 }
 

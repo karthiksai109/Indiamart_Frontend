@@ -127,29 +127,31 @@ const ProductList = ({ addToCart }) => {
       navigate('/login');
       return;
     }
+    const id = product._id;
+    const wasInWishlist = favIds.has(id);
+    setSavingId(id);
+
+    // Optimistic UI update
+    setFavIds((prev) => {
+      const next = new Set(prev);
+      wasInWishlist ? next.delete(id) : next.add(id);
+      return next;
+    });
+
     try {
-      setSavingId(product._id);
-      if (favIds.has(product._id)) {
-        const res = await removeFromWishlist(product._id);
-        if (res?.status !== false) {
-          setFavIds((prev) => {
-            const next = new Set(prev);
-            next.delete(product._id);
-            return next;
-          });
-        }
+      if (wasInWishlist) {
+        await removeFromWishlist(id);
       } else {
-        const res = await addToWishlist(product._id, true);
-        if (res?.status !== false) {
-          setFavIds((prev) => {
-            const next = new Set(prev);
-            next.add(product._id);
-            return next;
-          });
-        }
+        await addToWishlist(id, true);
       }
     } catch (e) {
+      // Revert on failure
       console.error('Wishlist error:', e);
+      setFavIds((prev) => {
+        const next = new Set(prev);
+        wasInWishlist ? next.add(id) : next.delete(id);
+        return next;
+      });
     } finally {
       setSavingId(null);
     }
