@@ -123,6 +123,7 @@ const ProductList = ({ addToCart }) => {
   const handleFavorite = async (product) => {
     const token = localStorage.getItem('token');
     if (!token) {
+      alert('Please login to add items to your wishlist.');
       navigate('/login');
       return;
     }
@@ -130,7 +131,7 @@ const ProductList = ({ addToCart }) => {
       setSavingId(product._id);
       if (favIds.has(product._id)) {
         const res = await removeFromWishlist(product._id);
-        if (res?.status) {
+        if (res?.status !== false) {
           setFavIds((prev) => {
             const next = new Set(prev);
             next.delete(product._id);
@@ -139,7 +140,7 @@ const ProductList = ({ addToCart }) => {
         }
       } else {
         const res = await addToWishlist(product._id, true);
-        if (res?.status) {
+        if (res?.status !== false) {
           setFavIds((prev) => {
             const next = new Set(prev);
             next.add(product._id);
@@ -148,7 +149,7 @@ const ProductList = ({ addToCart }) => {
         }
       }
     } catch (e) {
-      // silent fail
+      console.error('Wishlist error:', e);
     } finally {
       setSavingId(null);
     }

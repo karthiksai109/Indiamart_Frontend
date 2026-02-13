@@ -34,10 +34,10 @@ const Home = () => {
   };
 
   const products = [
-    { id: 1, name: "Traditional Clothes", image: "./img1.jpg" },
-    { id: 2, name: "Indian Foods", image: "./img2.jpg" },
-    { id: 3, name: "Kitchenware", image: "./img3.jpg" },
-    { id: 4, name: "Indian Meat", image: "./img4.jpg" },
+    { id: 1, name: "Traditional Clothes", image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=300&fit=crop" },
+    { id: 2, name: "Indian Foods", image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=300&fit=crop" },
+    { id: 3, name: "Kitchenware", image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop" },
+    { id: 4, name: "Indian Meat", image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=300&fit=crop" },
   ];
 
   // Premium floating animation

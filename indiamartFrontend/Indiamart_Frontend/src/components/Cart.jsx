@@ -84,56 +84,51 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
 
     let backendOrderId = null;
 
-    // Step 1: Create order
+    // Step 1: Create order in backend
     try {
       const orderRes = await createOrder(
         cartItems.map((i) => ({ _id: i._id, productId: i._id, quantity: i.quantity || 1 })),
         totalAmount,
         ''
       );
-      if (!orderRes.status || !orderRes.order) {
-        setError(orderRes.message || 'Failed to create order.');
+      if (orderRes.status && orderRes.order) {
+        backendOrderId = orderRes.order._id;
+      } else {
+        // Order creation returned error but didn't throw
+        setError(orderRes.message || 'Could not create order. Please try again.');
         setLoading(false);
         return;
       }
-      backendOrderId = orderRes.order._id;
     } catch (err) {
-      // Demo fallback: backend unreachable
-      const demoId = 'DEMO-' + Date.now();
-      clearCartAndGo(demoId);
-      return;
+      // Backend unreachable — use demo order
+      backendOrderId = 'DEMO-' + Date.now();
     }
 
-    // Step 2: Create payment
+    // Step 2: Process payment (demo mode — no Razorpay keys configured)
     try {
       const payRes = await createPaymentOrder(totalAmount, backendOrderId);
 
       if (payRes.demoMode || !payRes.orderId) {
+        // Demo mode: mark order as paid directly
         try {
           await verifyPayment({
             razorpay_order_id: 'demo',
-            razorpay_payment_id: 'demo',
+            razorpay_payment_id: 'demo_pay_' + Date.now(),
             razorpay_signature: 'demo',
             orderId: backendOrderId,
           });
         } catch {}
-        try {
-          await fetch(`${API_BASE}/user/${userId}/updateOrders`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          });
-        } catch {}
-        // Send order confirmation email
         try { await sendOrderConfirmation(backendOrderId); } catch {}
         clearCartAndGo(backendOrderId);
         return;
       }
 
+      // Real Razorpay flow
       const options = {
         key: payRes.keyId,
         amount: payRes.amount,
         currency: payRes.currency || 'USD',
-        name: 'IndiaMart',
+        name: 'Great IndiaMart',
         description: 'Indian Essentials',
         order_id: payRes.orderId,
         handler: async function (response) {
@@ -145,13 +140,6 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
               orderId: backendOrderId,
             });
             if (verifyRes.status) {
-              try {
-                await fetch(`${API_BASE}/user/${userId}/updateOrders`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                });
-              } catch {}
-              // Send order confirmation email
               try { await sendOrderConfirmation(backendOrderId); } catch {}
               clearCartAndGo(backendOrderId);
             } else {
@@ -165,14 +153,20 @@ const Cart = ({ cartItems: propCart, deleteFromCart }) => {
         },
       };
 
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', () => {
-        setError('Payment failed. Please try again.');
-        setLoading(false);
-      });
-      rzp.open();
+      if (window.Razorpay) {
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', () => {
+          setError('Payment failed. Please try again.');
+          setLoading(false);
+        });
+        rzp.open();
+      } else {
+        // Razorpay script not loaded — demo fallback
+        try { await sendOrderConfirmation(backendOrderId); } catch {}
+        clearCartAndGo(backendOrderId);
+      }
     } catch (err) {
-      // Payment service unreachable — demo fallback
+      // Payment service unreachable — complete order in demo mode
       try { await sendOrderConfirmation(backendOrderId); } catch {}
       clearCartAndGo(backendOrderId);
     }

@@ -52,6 +52,7 @@ function App() {
     else updated.push({ ...product, quantity: 1 });
     localStorage.setItem('cart', JSON.stringify(updated));
     setCart(updated);
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const deleteFromCart = (productId, quantity) => {
@@ -64,6 +65,7 @@ function App() {
       .filter((item) => (item.quantity || 1) > 0);
     localStorage.setItem('cart', JSON.stringify(updated));
     setCart(updated);
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   return (
