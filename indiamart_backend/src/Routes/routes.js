@@ -12,7 +12,8 @@ const { addToWishlist, removeFromWishlist, getWishlist } = require('../Controlle
 const { getPriceHistory } = require('../Controllers/priceHistoryController');
 const { recordPrice } = require('../Controllers/priceHistoryController');
 const { createPaymentOrder, verifyPayment } = require('../Controllers/paymentController');
-const { sendPriceDropEmails } = require('../Services/emailService');
+const { sendPriceDropEmails, sendOrderConfirmationEmail } = require('../Services/emailService');
+const { runIngestionPipeline, getProductFeed } = require('../Services/dataIngestionService');
 
 //=======APIs for User=========
 router.post("/register",  registerUser);
@@ -350,6 +351,119 @@ router.post('/admin/send-price-drop-emails', async (req, res) => {
   try {
     const result = await sendPriceDropEmails();
     res.status(200).json({ status: true, ...result });
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// ========== Order Confirmation Email ==========
+router.post('/order/:orderId/send-confirmation', isAuthentication, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const result = await sendOrderConfirmationEmail(orderId);
+    res.status(200).json({ status: true, ...result });
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// ========== Data Ingestion Pipeline (Azure / Snowflake) ==========
+router.post('/admin/run-ingestion', async (req, res) => {
+  try {
+    const { source } = req.body; // 'azure', 'snowflake', or 'all'
+    const result = await runIngestionPipeline(source || 'all');
+    res.status(200).json({ status: true, ...result });
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// ========== Real-Time Product Feed ==========
+router.get('/feed/products', async (req, res) => {
+  try {
+    const feed = await getProductFeed();
+    res.status(200).json({ status: true, ...feed });
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// ========== SSE: Server-Sent Events for live product updates ==========
+router.get('/feed/products/stream', async (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+
+  const sendFeed = async () => {
+    try {
+      const feed = await getProductFeed();
+      res.write(`data: ${JSON.stringify(feed)}\n\n`);
+    } catch (err) {
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    }
+  };
+
+  await sendFeed();
+  const interval = setInterval(sendFeed, 15000);
+
+  req.on('close', () => {
+    clearInterval(interval);
+    res.end();
+  });
+});
+
+// ========== Product Ratings ==========
+router.post('/product/:productId/rate', isAuthentication, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { rating, review } = req.body;
+    const userId = req.token;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Initialize ratings array if not present
+    if (!product.ratings) product.ratings = [];
+
+    const existingIdx = product.ratings.findIndex(r => r.userId && r.userId.toString() === userId);
+    if (existingIdx >= 0) {
+      product.ratings[existingIdx].rating = rating;
+      product.ratings[existingIdx].review = review || '';
+      product.ratings[existingIdx].updatedAt = new Date();
+    } else {
+      product.ratings.push({ userId, rating, review: review || '', createdAt: new Date() });
+    }
+
+    // Calculate average
+    const avg = product.ratings.reduce((s, r) => s + r.rating, 0) / product.ratings.length;
+    product.avgRating = Math.round(avg * 10) / 10;
+    product.reviewCount = product.ratings.length;
+
+    await product.save();
+    res.status(200).json({ status: true, avgRating: product.avgRating, reviewCount: product.reviewCount });
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// ========== Get Product Ratings ==========
+router.get('/product/:productId/ratings', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.productId).lean();
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    res.status(200).json({
+      status: true,
+      avgRating: product.avgRating || 0,
+      reviewCount: product.reviewCount || 0,
+      ratings: product.ratings || [],
+    });
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });
   }

@@ -14,7 +14,7 @@ const BudgetTool = ({ token }) => {
     const num = parseFloat(budget);
     setError('');
     if (!num || num <= 0) {
-      setError('Enter a valid budget (₹).');
+      setError('Enter a valid budget ($).');
       return;
     }
     setLoading(true);
@@ -50,7 +50,7 @@ const BudgetTool = ({ token }) => {
   return (
     <div className="budget-tool-wrap">
       <div className="budget-tool-input">
-        <label>Your budget (₹)</label>
+        <label>Your budget ($)</label>
         <input
           type="number"
           min="1"
@@ -75,13 +75,13 @@ const BudgetTool = ({ token }) => {
               <div key={index} className="budget-plan-card">
                 <div className="budget-plan-header">
                   <span className="plan-badge">Plan {index + 1}</span>
-                  <span className="plan-total">₹{total.toLocaleString('en-IN')}</span>
+                  <span className="plan-total">${total.toLocaleString('en-US')}</span>
                 </div>
                 <ul className="budget-plan-list">
                   {plan.map((item) => (
                     <li key={item._id}>
                       <span className="plan-item-name">{item.name}</span>
-                      <span className="plan-item-price">₹{item.price?.toLocaleString('en-IN')}</span>
+                      <span className="plan-item-price">${item.price?.toLocaleString('en-US')}</span>
                     </li>
                   ))}
                 </ul>

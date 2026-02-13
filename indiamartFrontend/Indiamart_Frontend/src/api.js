@@ -138,3 +138,42 @@ export const getWishlist = async () => {
   });
   return safeJson(response);
 };
+
+// ── Real-Time Data Feed ──
+export const getProductFeed = async () => {
+  const response = await fetch(`${API_BASE}/feed/products`);
+  return safeJson(response);
+};
+
+export const runIngestion = async (source = 'all') => {
+  const response = await fetch(`${API_BASE}/admin/run-ingestion`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ source }),
+  });
+  return safeJson(response);
+};
+
+// ── Order Confirmation Email ──
+export const sendOrderConfirmation = async (orderId) => {
+  const response = await fetch(`${API_BASE}/order/${orderId}/send-confirmation`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  return safeJson(response);
+};
+
+// ── Product Ratings ──
+export const rateProduct = async (productId, rating, review = '') => {
+  const response = await fetch(`${API_BASE}/product/${productId}/rate`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ rating, review }),
+  });
+  return safeJson(response);
+};
+
+export const getProductRatings = async (productId) => {
+  const response = await fetch(`${API_BASE}/product/${productId}/ratings`);
+  return safeJson(response);
+};

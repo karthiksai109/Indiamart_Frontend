@@ -8,7 +8,7 @@ import {
   Utensils,
   Shirt,
   ShoppingBasket,
-  IndianRupee
+  DollarSign
 } from "lucide-react";
 
 const Home = () => {
@@ -144,7 +144,7 @@ const Home = () => {
             {...floatAnim}
             transition={{ delay: 3 }}
           >
-            <IndianRupee size={20} />
+            <DollarSign size={20} />
           </motion.div>
 
         </div>

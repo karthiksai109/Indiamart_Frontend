@@ -51,11 +51,11 @@ const Orders = () => {
                 <ul className="order-items">
                   {(order.items || []).map((item, i) => (
                     <li key={i}>
-                      {item.name} × {item.quantity} – ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                      {item.name} × {item.quantity} – ${(item.price * item.quantity).toLocaleString('en-US')}
                     </li>
                   ))}
                 </ul>
-                <p className="order-total">Total: ₹{order.totalAmount?.toLocaleString('en-IN')}</p>
+                <p className="order-total">Total: ${order.totalAmount?.toLocaleString('en-US')}</p>
               </li>
             ))}
           </ul>

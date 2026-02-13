@@ -70,7 +70,7 @@ const Wishlist = ({ addToCart }) => {
                   />
                   <div className="wishlist-card-body">
                     <h3>{product.name}</h3>
-                    <p className="price">₹{product.price?.toLocaleString('en-IN')}</p>
+                    <p className="price">${product.price?.toLocaleString('en-US')}</p>
                     <div className="wishlist-actions">
                       <button type="button" className="btn-cart" onClick={() => handleAddToCart(product)}>
                         Add to Cart

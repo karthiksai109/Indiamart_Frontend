@@ -64,7 +64,7 @@ const ProductDetail = ({ addToCart }) => {
           <span className="product-category">{product.category}</span>
           <h1>{product.name}</h1>
           <p className="product-desc">{product.description || 'Indian essential.'}</p>
-          <p className="product-price">₹{product.price.toLocaleString('en-IN')}</p>
+          <p className="product-price">${product.price.toLocaleString('en-US')}</p>
           <div className="quantity-row">
             <label>Quantity:</label>
             <button type="button" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>−</button>
@@ -85,7 +85,7 @@ const ProductDetail = ({ addToCart }) => {
               <ul>
                 {priceHistory.slice(0, 7).map((h, i) => (
                   <li key={i}>
-                    ₹{h.price.toLocaleString('en-IN')} – {new Date(h.recordedAt).toLocaleDateString()}
+                    ${h.price.toLocaleString('en-US')} – {new Date(h.recordedAt).toLocaleDateString()}
                   </li>
                 ))}
               </ul>

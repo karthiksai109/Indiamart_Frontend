@@ -100,7 +100,7 @@ const PriceTracker = () => {
                     onClick={() => handleSelectProduct(p._id)}
                   >
                     <span>{p.name}</span>
-                    <span className="price">₹{p.price?.toLocaleString('en-IN')}</span>
+                    <span className="price">${p.price?.toLocaleString('en-US')}</span>
                   </li>
                 ))}
               </ul>
@@ -117,10 +117,10 @@ const PriceTracker = () => {
                   />
                   <div>
                     <h2>{selectedProduct.name}</h2>
-                    <p className="current-price">Current: ₹{currentPrice?.toLocaleString('en-IN')}</p>
+                    <p className="current-price">Current: ${currentPrice?.toLocaleString('en-US')}</p>
                     {priceHistory.length > 0 && (
                       <p className="range">
-                        Lowest: ₹{lowest?.toLocaleString('en-IN')} · Highest: ₹{highest?.toLocaleString('en-IN')}
+                        Lowest: ${lowest?.toLocaleString('en-US')} · Highest: ${highest?.toLocaleString('en-US')}
                       </p>
                     )}
                   </div>
@@ -132,7 +132,7 @@ const PriceTracker = () => {
                     <ul className="history-list">
                       {priceHistory.slice(0, 30).map((h, i) => (
                         <li key={i}>
-                          <span>₹{h.price.toLocaleString('en-IN')}</span>
+                          <span>${h.price.toLocaleString('en-US')}</span>
                           <span className="date">{new Date(h.recordedAt).toLocaleDateString()}</span>
                         </li>
                       ))}
