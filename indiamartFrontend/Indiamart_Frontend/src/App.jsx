@@ -13,6 +13,7 @@ import Orders from './pages/Orders';
 import ProductDetail from './pages/ProductDetail';
 import PriceTracker from './pages/PriceTracker';
 import Wishlist from './pages/Wishlist';
+import AIAssistant from './pages/AIAssistant';
 import './App.css';
 
 function App() {
@@ -103,6 +104,7 @@ function Content({ cart, addToCart, deleteFromCart }) {
         <Route path="/price-tracker" element={<PriceTracker />} />
         <Route path="/price-tracker/:productId" element={<PriceTracker />} />
         <Route path="/wishlist" element={<Wishlist addToCart={addToCart} />} />
+        <Route path="/ai-assistant" element={<AIAssistant />} />
       </Routes>
     </div>
   );

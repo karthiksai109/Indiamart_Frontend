@@ -110,6 +110,11 @@
   transform: translateY(-1px);
 }
 
+.ai-link {
+  color: var(--accent-gold) !important;
+  font-weight: 600;
+}
+
 .hamburger {
   display: none;
   background: none;

@@ -469,4 +469,108 @@ router.get('/product/:productId/ratings', async (req, res) => {
   }
 });
 
+// ========== AI Shopping Assistant - Smart Recommendations ==========
+router.post('/ai/recommend', async (req, res) => {
+  try {
+    const { preferences, budget } = req.body;
+    // preferences: { type: 'veg'|'nonveg'|'both', purpose: 'food'|'clothing'|'kitchen'|'wellness'|'festival'|'all', occasion: 'daily'|'festival'|'gift', budget: number }
+
+    const budgetNum = parseFloat(budget) || 100;
+    const query = {};
+
+    // Map preferences to categories
+    const categoryMap = {
+      food: ['Food', 'Spices', 'Beverages', 'Snacks', 'Sweets'],
+      clothing: ['Clothing'],
+      kitchen: ['Kitchen', 'Home'],
+      wellness: ['Wellness'],
+      festival: ['Festival', 'Home', 'Sweets'],
+      all: []
+    };
+
+    const purpose = preferences?.purpose || 'all';
+    const type = preferences?.type || 'both';
+    const occasion = preferences?.occasion || 'daily';
+
+    // Build category filter
+    let cats = categoryMap[purpose] || [];
+    if (occasion === 'festival') {
+      cats = [...new Set([...cats, 'Festival', 'Sweets', 'Home'])];
+    }
+    if (occasion === 'gift') {
+      cats = [...new Set([...cats, 'Festival', 'Sweets', 'Clothing'])];
+    }
+
+    if (cats.length > 0) {
+      query.category = { $in: cats };
+    }
+
+    // Filter out meat for veg preference
+    if (type === 'veg') {
+      query.category = query.category
+        ? { $in: cats.filter(c => c !== 'Meat') }
+        : { $ne: 'Meat' };
+    } else if (type === 'nonveg') {
+      if (!query.category) query.category = { $in: ['Meat', 'Food', 'Spices'] };
+    }
+
+    // Get matching products sorted by rating
+    const allProducts = await Product.find(query).sort({ avgRating: -1 }).lean();
+
+    // Generate multiple budget plans using a greedy knapsack approach
+    const plans = [];
+    const maxPlans = 3;
+
+    for (let p = 0; p < maxPlans; p++) {
+      const plan = [];
+      let remaining = budgetNum;
+      const used = new Set();
+
+      // For variety, shuffle slightly for plans 2 and 3
+      let pool = [...allProducts];
+      if (p > 0) {
+        pool = pool.sort(() => Math.random() - 0.5);
+      }
+
+      for (const product of pool) {
+        if (used.has(product._id.toString())) continue;
+        if (product.price <= remaining) {
+          plan.push(product);
+          remaining -= product.price;
+          used.add(product._id.toString());
+        }
+        if (remaining < 2) break;
+      }
+
+      if (plan.length > 0) {
+        plans.push(plan);
+      }
+    }
+
+    // Generate AI-style summary
+    const totalItems = plans[0]?.length || 0;
+    const totalSpent = plans[0]?.reduce((s, p) => s + p.price, 0) || 0;
+    const savings = budgetNum - totalSpent;
+
+    let summary = '';
+    if (type === 'veg') summary += 'Pure vegetarian picks. ';
+    if (type === 'nonveg') summary += 'Non-veg favorites included. ';
+    if (occasion === 'festival') summary += 'Festival-ready selections! ';
+    if (occasion === 'gift') summary += 'Perfect for gifting! ';
+    summary += `Found ${totalItems} items within your $${budgetNum} budget. `;
+    if (savings > 0) summary += `You save $${savings.toFixed(2)}!`;
+
+    res.status(200).json({
+      status: true,
+      summary,
+      plans,
+      budget: budgetNum,
+      totalSpent,
+      savings
+    });
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
 module.exports = router;

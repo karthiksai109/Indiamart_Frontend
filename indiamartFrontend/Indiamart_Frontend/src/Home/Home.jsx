@@ -59,7 +59,7 @@ const Home = () => {
 
       {/* ================= NAVBAR ================= */}
       <nav className="nav-bar">
-        <div className="logo">IndiaMart</div>
+        <div className="logo">Great IndiaMart</div>
 
         <div className="nav-links">
           <span className="nav-item" onClick={() => navigate("/")}>Home</span>
@@ -96,7 +96,7 @@ const Home = () => {
         {/* LEFT: CONTENT */}
         <div className="hero-content">
           <h1>
-            Experience <br /> IndiaMart
+            Experience <br /> Great IndiaMart
           </h1>
 
           <p>
@@ -180,7 +180,7 @@ const Home = () => {
 
       {/* ================= FOOTER ================= */}
       <footer className="footer">
-        © 2025 IndiaMart. All rights reserved.
+        © 2025 Great IndiaMart. All rights reserved.
       </footer>
 
     </div>

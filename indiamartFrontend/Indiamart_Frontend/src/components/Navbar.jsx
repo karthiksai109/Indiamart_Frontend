@@ -22,7 +22,7 @@ const Navbar = ({ cartCount }) => {
   return (
     <nav className="navbar-app">
       <div className="navbar-brand" onClick={() => go('/')}>
-        IndiaMart
+        Great IndiaMart
       </div>
 
       <div className={`navbar-links ${mobileOpen ? 'open' : ''}`}>
@@ -31,6 +31,7 @@ const Navbar = ({ cartCount }) => {
         <span className="nav-link" onClick={() => go('/price-tracker')}>Price Tracker</span>
         <span className="nav-link" onClick={() => go('/wishlist')}>Wishlist</span>
         <span className="nav-link" onClick={() => go('/orders')}>Orders</span>
+        <span className="nav-link ai-link" onClick={() => go('/ai-assistant')}>AI Assistant</span>
 
         <div className="mobile-nav-actions">
           {user ? (

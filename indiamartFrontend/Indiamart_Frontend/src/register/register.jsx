@@ -13,26 +13,33 @@ const Register = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
+    const [loading, setLoading] = useState(false);
+
     const handleRegister = async (e) => {
         e.preventDefault();
-
-        // Clear previous error
         setError('');
         setSuccess(false);
+        setLoading(true);
 
-        const response = await fetch(`${API_BASE}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fname, lname, email, address, password }),
-        });
+        try {
+            const response = await fetch(`${API_BASE}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fname, lname, email, address, password }),
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.ok) {
-            setSuccess(true);
-            navigate('/login'); // Redirect to login page upon success
-        } else {
-            setError(data.message || 'Registration failed. Please try again.');
+            if (response.ok && data.status !== false) {
+                setSuccess(true);
+                setTimeout(() => navigate('/login'), 1000);
+            } else {
+                setError(data.message || 'Registration failed. Please try again.');
+            }
+        } catch (err) {
+            setError('Network error. Make sure the backend is running.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -40,7 +47,7 @@ const Register = () => {
         <div className="Body">
             <div className="login-container">
                 <div className="login-card">
-                    <h1 className="login-header">Welcome to IndiaMart</h1>
+                    <h1 className="login-header">Welcome to Great IndiaMart</h1>
                     <p className="login-subtitle">Create your account to start shopping</p>
                     {error && <p  className="error-message">{error}</p>}
                     {success && <p className="success-message">Registration successful! Redirecting...</p>}
@@ -100,7 +107,9 @@ const Register = () => {
                                 required
                             />
                         </div>
-                        <button type="submit" className="login-button">Register</button>
+                        <button type="submit" className="login-button" disabled={loading}>
+                            {loading ? 'Creating account...' : 'Register'}
+                        </button>
                     </form>
                     <p>
                         Already have an account?{' '}
