@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd indiamartFrontend/Indiamart_Frontend && npm install && npm run build",
+  "outputDirectory": "indiamartFrontend/Indiamart_Frontend/dist",
+  "installCommand": "cd indiamartFrontend/Indiamart_Frontend && npm install",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
