@@ -1,0 +1,137 @@
+[
+  {
+    "product_name": "Basmati Rice Premium 5kg",
+    "category": "food",
+    "cost": "12.99",
+    "description": "Aged long-grain basmati rice from the foothills of the Himalayas",
+    "img_link": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=400&fit=crop",
+    "qty_available": 200,
+    "rating": 4.8
+  },
+  {
+    "product_name": "Organic Turmeric Powder",
+    "category": "spice",
+    "cost": "6.49",
+    "description": "Pure organic turmeric from Kerala, rich in curcumin",
+    "img_link": "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?w=400&h=400&fit=crop",
+    "qty_available": 350,
+    "rating": 4.7
+  },
+  {
+    "product_name": "Garam Masala Blend",
+    "category": "spice",
+    "cost": "7.99",
+    "description": "Traditional 12-spice garam masala, hand-roasted and freshly ground",
+    "img_link": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=400&fit=crop",
+    "qty_available": 280,
+    "rating": 4.6
+  },
+  {
+    "product_name": "Alphonso Mango Pulp 850g",
+    "category": "food",
+    "cost": "8.99",
+    "description": "Premium Ratnagiri Alphonso mango pulp for desserts and lassi",
+    "img_link": "https://images.unsplash.com/photo-1553279768-865429fa0078?w=400&h=400&fit=crop",
+    "qty_available": 150,
+    "rating": 4.9
+  },
+  {
+    "product_name": "Darjeeling First Flush Tea",
+    "category": "beverage",
+    "cost": "14.99",
+    "description": "Single-estate Darjeeling first flush with floral muscatel notes",
+    "img_link": "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=400&fit=crop",
+    "qty_available": 120,
+    "rating": 4.5
+  },
+  {
+    "product_name": "Silk Kurta Men",
+    "category": "wear",
+    "cost": "45.99",
+    "description": "Handwoven Banarasi silk kurta for festivals and celebrations",
+    "img_link": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop",
+    "qty_available": 60,
+    "rating": 4.6
+  },
+  {
+    "product_name": "Pashmina Shawl Kashmir",
+    "category": "wear",
+    "cost": "89.99",
+    "description": "Genuine Kashmiri pashmina shawl, ultra-soft hand-embroidered",
+    "img_link": "https://images.unsplash.com/photo-1601244005535-a48d21d951ac?w=400&h=400&fit=crop",
+    "qty_available": 25,
+    "rating": 4.9
+  },
+  {
+    "product_name": "Cast Iron Tawa 12 inch",
+    "category": "kitchen",
+    "cost": "24.99",
+    "description": "Pre-seasoned cast iron tawa for perfect rotis and dosas",
+    "img_link": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop",
+    "qty_available": 80,
+    "rating": 4.6
+  },
+  {
+    "product_name": "Copper Water Bottle 1L",
+    "category": "kitchen",
+    "cost": "19.99",
+    "description": "Pure copper water bottle for Ayurvedic health benefits",
+    "img_link": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=400&fit=crop",
+    "qty_available": 150,
+    "rating": 4.5
+  },
+  {
+    "product_name": "Chicken Tikka Masala Kit",
+    "category": "meat",
+    "cost": "13.99",
+    "description": "Complete cooking kit with marination spices and gravy base",
+    "img_link": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=400&fit=crop",
+    "qty_available": 90,
+    "rating": 4.7
+  },
+  {
+    "product_name": "Puja Thali Set Complete",
+    "category": "festival",
+    "cost": "29.99",
+    "description": "Complete brass puja thali with bell, diya, incense holder, and kalash",
+    "img_link": "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=400&h=400&fit=crop",
+    "qty_available": 70,
+    "rating": 4.8
+  },
+  {
+    "product_name": "Diwali Gift Hamper Premium",
+    "category": "festival",
+    "cost": "49.99",
+    "description": "Premium gift box with dry fruits, sweets, diyas, and greeting card",
+    "img_link": "https://images.unsplash.com/photo-1574226516831-e1dff420e562?w=400&h=400&fit=crop",
+    "qty_available": 40,
+    "rating": 4.9
+  },
+  {
+    "product_name": "Ayurvedic Hair Oil 200ml",
+    "category": "wellness",
+    "cost": "9.99",
+    "description": "Bhringraj and amla infused hair oil for growth and strength",
+    "img_link": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400&h=400&fit=crop",
+    "qty_available": 200,
+    "rating": 4.3
+  },
+  {
+    "product_name": "Haldiram Namkeen Variety Pack",
+    "category": "snack",
+    "cost": "10.99",
+    "description": "Assorted Indian snacks - bhujia, mixture, sev, and aloo bhujia",
+    "img_link": "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=400&h=400&fit=crop",
+    "qty_available": 200,
+    "rating": 4.5
+  },
+  {
+    "product_name": "Kaju Katli 500g",
+    "category": "sweet",
+    "cost": "16.99",
+    "description": "Premium cashew fudge with silver-leaf coating, melt-in-mouth",
+    "img_link": "https://images.unsplash.com/photo-1666190077619-601a5c498280?w=400&h=400&fit=crop",
+    "qty_available": 100,
+    "rating": 4.8
+  }
+]

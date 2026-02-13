@@ -17,6 +17,7 @@
 
 const Product = require('../Models/productModel');
 const PriceHistory = require('../Models/priceHistoryModel');
+const { BlobServiceClient } = require('@azure/storage-blob');
 
 // ─── Source Configurations ───────────────────────────────────────────
 const DATA_SOURCES = {
@@ -39,14 +40,60 @@ const DATA_SOURCES = {
   },
 };
 
-// ─── Mock: Simulate Azure Data Lake fetch ────────────────────────────
-// Returns unstructured JSON blobs as they would come from a data lake
+// ─── Azure Data Lake fetch (REAL SDK) ─────────────────────────────────
+// Reads JSON blob files from Azure Blob Storage container
 async function fetchFromAzure() {
-  // In production:
-  // const { BlobServiceClient } = require('@azure/storage-blob');
-  // const client = BlobServiceClient.fromConnectionString(DATA_SOURCES.azure.connectionString);
-  // ... iterate blobs, parse JSON/CSV ...
+  const connStr = DATA_SOURCES.azure.connectionString;
+  const containerName = DATA_SOURCES.azure.container;
 
+  // If no connection string, fall back to mock data for local dev
+  if (!connStr) {
+    console.log('[Ingestion] No AZURE_STORAGE_CONNECTION_STRING set — using mock data');
+    return getMockAzureData();
+  }
+
+  try {
+    const blobServiceClient = BlobServiceClient.fromConnectionString(connStr);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+
+    const allRecords = [];
+
+    // Iterate through all blobs in the container
+    for await (const blob of containerClient.listBlobsFlat()) {
+      // Only process .json files
+      if (!blob.name.endsWith('.json')) continue;
+
+      console.log(`[Ingestion] Reading blob: ${blob.name}`);
+      const blobClient = containerClient.getBlobClient(blob.name);
+      const downloadResponse = await blobClient.download(0);
+
+      // Read the stream into a string
+      const chunks = [];
+      for await (const chunk of downloadResponse.readableStreamBody) {
+        chunks.push(chunk);
+      }
+      const content = Buffer.concat(chunks).toString('utf-8');
+
+      // Parse JSON — could be an array or single object
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        allRecords.push(...parsed);
+      } else {
+        allRecords.push(parsed);
+      }
+    }
+
+    console.log(`[Ingestion] Fetched ${allRecords.length} records from Azure Blob Storage`);
+    return allRecords;
+  } catch (err) {
+    console.error('[Ingestion] Azure fetch error:', err.message);
+    console.log('[Ingestion] Falling back to mock data');
+    return getMockAzureData();
+  }
+}
+
+// ─── Mock fallback for local development without Azure ────────────────
+function getMockAzureData() {
   return [
     {
       product_name: 'Basmati Rice Premium 5kg',
@@ -93,17 +140,6 @@ async function fetchFromAzure() {
       supplier: 'Kanchipuram Weavers Coop',
     },
     {
-      product_name: 'Brass Pooja Thali Set',
-      product_category: 'Home & Pooja',
-      unit_price: 34.99,
-      desc: 'Hand-crafted brass pooja thali with diya, incense holder, and kumkum box.',
-      img: 'https://images.unsplash.com/photo-1606293926249-ed22e446d476?w=400',
-      available_qty: 60,
-      tags: ['pooja', 'brass', 'handcrafted', 'traditional'],
-      region: 'Rajasthan',
-      supplier: 'Jaipur Brass Works',
-    },
-    {
       product_name: 'Alphonso Mango Pulp 850g',
       product_category: 'Groceries',
       unit_price: 8.99,
@@ -113,50 +149,6 @@ async function fetchFromAzure() {
       tags: ['mango', 'alphonso', 'pulp', 'ratnagiri'],
       region: 'West India',
       supplier: 'Konkan Fruit Exports',
-    },
-    {
-      product_name: 'Turmeric Powder Organic 500g',
-      product_category: 'Spices',
-      unit_price: 6.49,
-      desc: 'Organic Lakadong turmeric from Meghalaya. Highest curcumin content.',
-      img: 'https://images.unsplash.com/photo-1615485500704-8e990f9900f7?w=400',
-      available_qty: 400,
-      tags: ['turmeric', 'organic', 'lakadong', 'spice'],
-      region: 'Northeast India',
-      supplier: 'Meghalaya Organics',
-    },
-    {
-      product_name: 'Kolhapuri Chappal Leather',
-      product_category: 'Footwear',
-      unit_price: 42.00,
-      desc: 'Authentic hand-stitched Kolhapuri leather chappal. Vegetable-tanned.',
-      img: 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400',
-      available_qty: 45,
-      tags: ['chappal', 'kolhapuri', 'leather', 'handmade'],
-      region: 'Maharashtra',
-      supplier: 'Kolhapur Leather Artisans',
-    },
-    {
-      product_name: 'Mysore Sandalwood Soap 3-Pack',
-      product_category: 'Personal Care',
-      unit_price: 12.99,
-      desc: 'Classic Mysore sandalwood soap with pure sandalwood oil.',
-      img: 'https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400',
-      available_qty: 500,
-      tags: ['soap', 'sandalwood', 'mysore', 'natural'],
-      region: 'Karnataka',
-      supplier: 'Karnataka Soaps & Detergents',
-    },
-    {
-      product_name: 'Assam CTC Tea 1kg',
-      product_category: 'Beverages',
-      unit_price: 14.99,
-      desc: 'Strong Assam CTC tea. Perfect for masala chai.',
-      img: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400',
-      available_qty: 350,
-      tags: ['tea', 'assam', 'ctc', 'chai'],
-      region: 'Northeast India',
-      supplier: 'Assam Tea Corporation',
     },
   ];
 }
@@ -219,13 +211,34 @@ async function fetchFromSnowflake() {
 
 // ─── Normalizer: Convert unstructured records to our schema ──────────
 function normalizeAzureRecord(raw) {
+  // Handle multiple unstructured field name formats
+  const rawPrice = raw.unit_price || raw.price || raw.cost || 0;
+  const priceStr = String(rawPrice).replace(/[₹$,]/g, '').trim();
+
+  // Category normalization map
+  const catMap = {
+    'food': 'Food', 'groceries': 'Food', 'grocery': 'Food',
+    'spice': 'Spices', 'spices': 'Spices',
+    'beverage': 'Beverages', 'beverages': 'Beverages', 'drink': 'Beverages',
+    'wear': 'Clothing', 'clothing': 'Clothing', 'clothes': 'Clothing', 'footwear': 'Clothing',
+    'kitchen': 'Kitchen', 'kitchenware': 'Kitchen',
+    'home': 'Home', 'home & pooja': 'Home', 'decor': 'Home', 'art & decor': 'Home',
+    'wellness': 'Wellness', 'personal care': 'Wellness', 'beauty': 'Wellness',
+    'snack': 'Snacks', 'snacks': 'Snacks',
+    'sweet': 'Sweets', 'sweets': 'Sweets',
+    'meat': 'Meat', 'nonveg': 'Meat', 'non-veg': 'Meat',
+    'festival': 'Festival', 'puja': 'Festival', 'pooja': 'Festival',
+  };
+  const rawCat = (raw.product_category || raw.category || raw.cat || 'General').trim().toLowerCase();
+  const category = catMap[rawCat] || raw.product_category || raw.category || 'General';
+
   return {
     name: (raw.product_name || raw.name || '').trim(),
-    category: (raw.product_category || raw.category || 'General').trim(),
-    price: parseFloat(raw.unit_price || raw.price || 0),
+    category,
+    price: parseFloat(priceStr) || 0,
     description: (raw.desc || raw.description || '').trim(),
-    imageUrl: (raw.img || raw.image_url || raw.imageUrl || '').trim(),
-    stock: parseInt(raw.available_qty || raw.stock || 0, 10),
+    imageUrl: (raw.img || raw.image_url || raw.imageUrl || raw.img_link || '').trim(),
+    stock: parseInt(raw.available_qty || raw.qty_available || raw.stock || 0, 10),
     _meta: {
       source: 'azure_data_lake',
       tags: raw.tags || [],
