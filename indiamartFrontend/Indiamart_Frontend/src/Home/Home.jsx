@@ -17,14 +17,16 @@ const Home = () => {
   const [token, setToken] = useState("");
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const storedToken = localStorage.getItem("token");
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const storedToken = localStorage.getItem("token");
 
-    if (user) {
-      setUserName(user.name);
-      setToken(storedToken || user.token);
-      localStorage.setItem("userId", user._id);
-    }
+      if (user) {
+        setUserName(user.name);
+        setToken(storedToken || user.token);
+        if (user.userId) localStorage.setItem("userId", user.userId);
+      }
+    } catch {}
   }, []);
 
   const handleLogout = () => {

@@ -268,51 +268,46 @@ router.get('/user/:userId/cart/check-budget', isAuthentication, async (req, res)
 router.post('/user/:userId/budget-plan', async (req, res) => {
     try {
       const { budget } = req.body;
-      const products = await Product.find(); // assume Product is your model
-  
-      // sort by price ascending
-      products.sort((a, b) => a.price - b.price);
-  
-      const generatePlans = () => {
-        const plans = [];
-  
-        // Plan 1: Max items within budget
-        let plan1 = [], sum1 = 0;
-        for (const p of products) {
-          if (sum1 + p.price <= budget) {
-            plan1.push(p);
-            sum1 += p.price;
+      if (!budget || budget <= 0) {
+        return res.status(400).json({ status: false, message: 'Enter a valid budget.' });
+      }
+      const products = await Product.find().lean();
+
+      // Plan 1: Max items (cheapest first)
+      const byPrice = [...products].sort((a, b) => a.price - b.price);
+      let plan1 = [], sum1 = 0;
+      for (const p of byPrice) {
+        if (sum1 + p.price <= budget) { plan1.push(p); sum1 += p.price; }
+      }
+
+      // Plan 2: Top-rated items that fit
+      const byRating = [...products].sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
+      let plan2 = [], sum2 = 0;
+      for (const p of byRating) {
+        if (sum2 + p.price <= budget) { plan2.push(p); sum2 += p.price; }
+      }
+
+      // Plan 3: Category variety — pick top item from each category
+      const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+      let plan3 = [], sum3 = 0;
+      for (const cat of cats) {
+        const catProducts = products.filter(p => p.category === cat).sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
+        for (const p of catProducts) {
+          if (sum3 + p.price <= budget && !plan3.find(x => x._id.toString() === p._id.toString())) {
+            plan3.push(p); sum3 += p.price; break;
           }
         }
-        plans.push(plan1);
-  
-        // Plan 2: Items with highest value close to budget
-        let bestPlan = [];
-        const n = products.length;
-        for (let i = 0; i < (1 << n); i++) {
-          let plan = [], total = 0;
-          for (let j = 0; j < n; j++) {
-            if (i & (1 << j)) {
-              if (total + products[j].price <= budget) {
-                total += products[j].price;
-                plan.push(products[j]);
-              }
-            }
-          }
-          if (total > bestPlan.reduce((s, p) => s + p.price, 0)) {
-            bestPlan = plan;
-          }
+      }
+      // Fill remaining budget with best remaining products
+      const plan3Ids = new Set(plan3.map(p => p._id.toString()));
+      for (const p of byRating) {
+        if (!plan3Ids.has(p._id.toString()) && sum3 + p.price <= budget) {
+          plan3.push(p); sum3 += p.price; plan3Ids.add(p._id.toString());
         }
-        plans.push(bestPlan);
-  
-        // Plan 3: Add your own logic e.g. by category balance
-  
-        return plans;
-      };
-  
-      const resultPlans = generatePlans();
-  
-      res.status(200).json({ status: true, plans: resultPlans });
+      }
+
+      const plans = [plan1, plan2, plan3].filter(p => p.length > 0);
+      res.status(200).json({ status: true, plans });
     } catch (err) {
       res.status(500).json({ status: false, message: err.message });
     }
