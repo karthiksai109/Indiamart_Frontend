@@ -22,18 +22,39 @@ const ProductList = ({ addToCart }) => {
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const recognitionRef = useRef(null);
 
-  // Load products
+  // Load products — show cache instantly, refresh from API in background
   useEffect(() => {
+    // Show cached products immediately (no loading spinner)
+    try {
+      const ts = parseInt(localStorage.getItem('cachedProductsTs') || '0');
+      if (Date.now() - ts < 5 * 60 * 1000) {
+        const cached = JSON.parse(localStorage.getItem('cachedProducts'));
+        if (Array.isArray(cached) && cached.length > 0) {
+          setProducts(cached);
+          setFilteredProducts(cached);
+          setLoading(false);
+          setLiveConnected(true);
+        }
+      }
+    } catch {}
+
+    // Fetch fresh data from API
     (async () => {
       try {
         const data = await getAllProducts();
         const list = data.products || data || [];
         const arr = Array.isArray(list) ? list : [];
-        setProducts(arr);
-        setFilteredProducts(arr);
-        setLiveConnected(true);
+        if (arr.length > 0) {
+          setProducts(arr);
+          setFilteredProducts(arr);
+        }
+        setLiveConnected(!data.fromCache);
       } catch (err) {
-        setError(err.message || 'Failed to load products.');
+        // Only show error if we have no products at all
+        setProducts((prev) => {
+          if (prev.length === 0) setError(err.message || 'Failed to load products.');
+          return prev;
+        });
         setLiveConnected(false);
       } finally {
         setLoading(false);

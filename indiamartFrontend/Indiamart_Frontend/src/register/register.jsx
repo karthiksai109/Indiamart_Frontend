@@ -22,11 +22,16 @@ const Register = () => {
         setLoading(true);
 
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 12000);
+
             const response = await fetch(`${API_BASE}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fname, lname, email, address, password }),
+                signal: controller.signal,
             });
+            clearTimeout(timeout);
 
             const data = await response.json();
 
@@ -37,7 +42,11 @@ const Register = () => {
                 setError(data.message || 'Registration failed. Please try again.');
             }
         } catch (err) {
-            setError('Network error. Make sure the backend is running.');
+            if (err.name === 'AbortError') {
+                setError('Server is starting up. Please wait 30 seconds and try again.');
+            } else {
+                setError('Network error. Make sure the backend is running.');
+            }
         } finally {
             setLoading(false);
         }
