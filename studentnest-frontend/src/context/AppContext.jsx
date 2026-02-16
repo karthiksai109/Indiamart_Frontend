@@ -38,20 +38,43 @@ const NATIONALITIES = [
   "German", "French", "Italian", "Spanish", "Russian"
 ]
 
+function getAllUsers() {
+  const raw = localStorage.getItem('studentnest_users')
+  return raw ? JSON.parse(raw) : []
+}
+
+function saveAllUsers(users) {
+  localStorage.setItem('studentnest_users', JSON.stringify(users))
+}
+
 export function AppProvider({ children }) {
   const [student, setStudent] = useState(() => {
-    const saved = localStorage.getItem('studentnest_student')
+    const saved = localStorage.getItem('studentnest_session')
     return saved ? JSON.parse(saved) : null
+  })
+  const [joinedGroups, setJoinedGroups] = useState(() => {
+    const saved = localStorage.getItem('studentnest_joined')
+    return saved ? JSON.parse(saved) : []
   })
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (student) {
-      localStorage.setItem('studentnest_student', JSON.stringify(student))
+      localStorage.setItem('studentnest_session', JSON.stringify(student))
+    } else {
+      localStorage.removeItem('studentnest_session')
     }
   }, [student])
 
+  useEffect(() => {
+    localStorage.setItem('studentnest_joined', JSON.stringify(joinedGroups))
+  }, [joinedGroups])
+
   const registerStudent = (data) => {
+    const users = getAllUsers()
+    const exists = users.find(u => u.email.toLowerCase() === data.email.toLowerCase())
+    if (exists) return { error: 'An account with this email already exists. Please sign in.' }
+
     const college = COLLEGES_DB.find(c => c.name === data.collegeName)
     const studentData = {
       ...data,
@@ -59,26 +82,32 @@ export function AppProvider({ children }) {
       college: college || { name: data.collegeName, city: data.city || 'Unknown', country: data.country || 'USA', lat: 0, lng: 0 },
       registeredAt: new Date().toISOString()
     }
+    users.push(studentData)
+    saveAllUsers(users)
     setStudent(studentData)
     return studentData
   }
 
-  const loginWithStudentId = (studentId) => {
-    const saved = localStorage.getItem('studentnest_student')
-    if (saved) {
-      const data = JSON.parse(saved)
-      if (data.id === studentId || data.studentId === studentId) {
-        setStudent(data)
-        return data
-      }
-    }
-    return null
+  const loginWithEmail = (email, password) => {
+    const users = getAllUsers()
+    const found = users.find(u => u.email.toLowerCase() === email.toLowerCase())
+    if (!found) return { error: 'No account found with this email. Please register first.' }
+    if (found.password !== password) return { error: 'Incorrect password. Please try again.' }
+    setStudent(found)
+    return found
   }
 
   const logout = () => {
     setStudent(null)
-    localStorage.removeItem('studentnest_student')
   }
+
+  const toggleJoinGroup = (groupId) => {
+    setJoinedGroups(prev =>
+      prev.includes(groupId) ? prev.filter(id => id !== groupId) : [...prev, groupId]
+    )
+  }
+
+  const isGroupJoined = (groupId) => joinedGroups.includes(groupId)
 
   return (
     <AppContext.Provider value={{
@@ -86,10 +115,13 @@ export function AppProvider({ children }) {
       loading,
       setLoading,
       registerStudent,
-      loginWithStudentId,
+      loginWithEmail,
       logout,
       colleges: COLLEGES_DB,
-      nationalities: NATIONALITIES
+      nationalities: NATIONALITIES,
+      toggleJoinGroup,
+      isGroupJoined,
+      joinedGroups,
     }}>
       {children}
     </AppContext.Provider>

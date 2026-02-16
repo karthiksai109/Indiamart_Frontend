@@ -5,10 +5,10 @@ import Footer from '../components/Footer'
 import PlaceCard from '../components/PlaceCard'
 import SearchFilter from '../components/SearchFilter'
 import { generateCommunityData } from '../utils/mockData'
-import { Users, MapPin, MessageCircle, Calendar, UserPlus } from 'lucide-react'
+import { Users, MapPin, MessageCircle, Calendar, UserPlus, UserMinus, Check } from 'lucide-react'
 
 export default function Community() {
-  const { student } = useApp()
+  const { student, toggleJoinGroup, isGroupJoined } = useApp()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('members')
   const [filterType, setFilterType] = useState('all')
@@ -169,8 +169,15 @@ export default function Community() {
                   </div>
                 )}
 
-                <button style={styles.joinBtn}>
-                  <UserPlus size={16} /> Join Group
+                <button
+                  onClick={() => toggleJoinGroup(group.id)}
+                  style={isGroupJoined(group.id) ? styles.joinedBtn : styles.joinBtn}
+                >
+                  {isGroupJoined(group.id) ? (
+                    <><Check size={16} /> Joined</>
+                  ) : (
+                    <><UserPlus size={16} /> Join Group</>
+                  )}
                 </button>
               </div>
             </div>
@@ -391,6 +398,22 @@ const styles = {
     fontSize: 14,
     fontWeight: 600,
     border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  joinedBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    width: '100%',
+    padding: '12px',
+    borderRadius: 10,
+    background: '#f0fdf4',
+    color: '#16a34a',
+    fontSize: 14,
+    fontWeight: 600,
+    border: '1.5px solid #bbf7d0',
     cursor: 'pointer',
     transition: 'all 0.2s',
   },

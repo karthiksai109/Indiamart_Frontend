@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { UserPlus, ArrowRight, ArrowLeft, GraduationCap, Globe, Mail, Phone, User } from 'lucide-react'
+import { UserPlus, ArrowRight, ArrowLeft, GraduationCap, Globe, Mail, Phone, User, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function Register() {
   const { registerStudent, colleges, nationalities } = useApp()
@@ -11,11 +11,14 @@ export default function Register() {
     fullName: '',
     email: '',
     phone: '',
-    studentId: '',
+    password: '',
+    confirmPassword: '',
     collegeName: '',
     nationality: '',
   })
   const [errors, setErrors] = useState({})
+  const [showPassword, setShowPassword] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   const update = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -28,6 +31,9 @@ export default function Register() {
     if (!form.email.trim()) errs.email = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = 'Enter a valid email'
     if (!form.phone.trim()) errs.phone = 'Phone number is required'
+    if (!form.password) errs.password = 'Password is required'
+    else if (form.password.length < 6) errs.password = 'Password must be at least 6 characters'
+    if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwords do not match'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -46,12 +52,17 @@ export default function Register() {
 
   const handleSubmit = () => {
     if (!validateStep2()) return
+    setSubmitError('')
     const college = colleges.find(c => c.name === form.collegeName)
-    const student = registerStudent({
+    const result = registerStudent({
       ...form,
       city: college?.city,
       country: college?.country,
     })
+    if (result.error) {
+      setSubmitError(result.error)
+      return
+    }
     navigate('/dashboard')
   }
 
@@ -144,14 +155,36 @@ export default function Register() {
               </div>
 
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Student ID (optional)</label>
+                <label style={styles.label}>
+                  <Lock size={14} /> Password
+                </label>
+                <div style={styles.passwordWrap}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={e => update('password', e.target.value)}
+                    placeholder="Min 6 characters"
+                    style={{ ...styles.input, ...(errors.password ? styles.inputError : {}), paddingRight: 44 }}
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {errors.password && <span style={styles.error}>{errors.password}</span>}
+              </div>
+
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>
+                  <Lock size={14} /> Confirm Password
+                </label>
                 <input
-                  type="text"
-                  value={form.studentId}
-                  onChange={e => update('studentId', e.target.value)}
-                  placeholder="e.g. STU-2024-1234"
-                  style={styles.input}
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.confirmPassword}
+                  onChange={e => update('confirmPassword', e.target.value)}
+                  placeholder="Re-enter your password"
+                  style={{ ...styles.input, ...(errors.confirmPassword ? styles.inputError : {}) }}
                 />
+                {errors.confirmPassword && <span style={styles.error}>{errors.confirmPassword}</span>}
               </div>
 
               <button onClick={handleNext} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
@@ -197,6 +230,10 @@ export default function Register() {
                 </select>
                 {errors.nationality && <span style={styles.error}>{errors.nationality}</span>}
               </div>
+
+              {submitError && (
+                <div style={styles.submitError}>{submitError}</div>
+              )}
 
               <div style={styles.btnRow}>
                 <button onClick={() => setStep(1)} className="btn btn-secondary" style={{ flex: 1 }}>
@@ -392,6 +429,31 @@ const styles = {
     marginTop: 24,
     fontSize: 14,
     color: '#64748b',
+  },
+  passwordWrap: {
+    position: 'relative',
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#94a3b8',
+    padding: 4,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  submitError: {
+    padding: '12px 16px',
+    borderRadius: 10,
+    background: '#fef2f2',
+    border: '1px solid #fecaca',
+    color: '#dc2626',
+    fontSize: 13,
+    fontWeight: 500,
   },
 }
 

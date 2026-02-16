@@ -2,8 +2,7 @@ import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { Building2, UtensilsCrossed, Users, Trophy, MapPin, GraduationCap, Globe, Copy, Check, ArrowRight, TrendingUp, Clock, Star } from 'lucide-react'
-import { useState } from 'react'
+import { Building2, UtensilsCrossed, Users, Trophy, MapPin, GraduationCap, Globe, Mail, ArrowRight, TrendingUp, Clock, Star } from 'lucide-react'
 
 const QUICK_LINKS = [
   { path: '/housing', icon: Building2, title: 'Housing', desc: 'Find affordable apartments and rooms near campus', color: '#0f766e', bg: '#f0fdfa' },
@@ -21,15 +20,8 @@ const TIPS = [
 
 export default function Dashboard() {
   const { student } = useApp()
-  const [copied, setCopied] = useState(false)
 
   if (!student) return null
-
-  const copyId = () => {
-    navigator.clipboard.writeText(student.id)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   return (
     <div>
@@ -47,14 +39,12 @@ export default function Dashboard() {
           </div>
           <div style={styles.welcomeRight}>
             <div style={styles.idCard}>
-              <div style={styles.idCardHeader}>Your Student ID</div>
+              <div style={styles.idCardHeader}>Signed in as</div>
               <div style={styles.idCardValue}>
-                <span>{student.id}</span>
-                <button onClick={copyId} style={styles.copyBtn} title="Copy ID">
-                  {copied ? <Check size={14} color="#047857" /> : <Copy size={14} />}
-                </button>
+                <Mail size={14} color="#0f766e" />
+                <span>{student.email}</span>
               </div>
-              <div style={styles.idCardHint}>Use this ID to sign in on any device</div>
+              <div style={styles.idCardHint}>{student.fullName}</div>
             </div>
           </div>
         </div>
@@ -166,22 +156,9 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    fontSize: 18,
-    fontWeight: 700,
+    fontSize: 15,
+    fontWeight: 600,
     color: '#0f172a',
-    fontFamily: 'monospace',
-  },
-  copyBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    background: 'white',
-    border: '1px solid #e2e8f0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    color: '#64748b',
   },
   idCardHint: {
     fontSize: 11,

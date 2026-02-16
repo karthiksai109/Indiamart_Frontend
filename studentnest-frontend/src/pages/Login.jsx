@@ -1,24 +1,30 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { ArrowLeft, LogIn, IdCard } from 'lucide-react'
+import { ArrowLeft, LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function Login() {
-  const { loginWithStudentId } = useApp()
+  const { loginWithEmail } = useApp()
   const navigate = useNavigate()
-  const [studentId, setStudentId] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
 
   const handleLogin = () => {
-    if (!studentId.trim()) {
-      setError('Please enter your Student ID')
+    if (!email.trim()) {
+      setError('Please enter your email address')
       return
     }
-    const student = loginWithStudentId(studentId.trim())
-    if (student) {
-      navigate('/dashboard')
+    if (!password) {
+      setError('Please enter your password')
+      return
+    }
+    const result = loginWithEmail(email.trim(), password)
+    if (result.error) {
+      setError(result.error)
     } else {
-      setError('No account found with this Student ID. Please register first.')
+      navigate('/dashboard')
     }
   }
 
@@ -32,21 +38,41 @@ export default function Login() {
 
         <div style={styles.logoIcon}>SN</div>
         <h1 style={styles.title}>Welcome Back</h1>
-        <p style={styles.subtitle}>Sign in with your Student ID to access your dashboard</p>
+        <p style={styles.subtitle}>Sign in with your email and password to access your dashboard</p>
+
+        {error && <div style={styles.errorBox}>{error}</div>}
 
         <div style={styles.inputGroup}>
           <label style={styles.label}>
-            <IdCard size={14} /> Student ID
+            <Mail size={14} /> Email Address
           </label>
           <input
-            type="text"
-            value={studentId}
-            onChange={e => { setStudentId(e.target.value); setError('') }}
+            type="email"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setError('') }}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            placeholder="e.g. STU-M2X5K9R"
-            style={{ ...styles.input, ...(error ? { borderColor: '#ef4444' } : {}) }}
+            placeholder="your.email@university.edu"
+            style={styles.input}
           />
-          {error && <span style={styles.error}>{error}</span>}
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>
+            <Lock size={14} /> Password
+          </label>
+          <div style={styles.passwordWrap}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={e => { setPassword(e.target.value); setError('') }}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              placeholder="Enter your password"
+              style={{ ...styles.input, paddingRight: 44 }}
+            />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         <button onClick={handleLogin} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
@@ -54,16 +80,14 @@ export default function Login() {
         </button>
 
         <div style={styles.divider}>
+          <div style={styles.dividerLine} />
           <span>or</span>
+          <div style={styles.dividerLine} />
         </div>
 
         <Link to="/register" className="btn btn-secondary" style={{ width: '100%' }}>
           Create New Account
         </Link>
-
-        <p style={styles.hint}>
-          Your Student ID was provided when you registered. Check your registration confirmation.
-        </p>
       </div>
     </div>
   )
@@ -122,6 +146,16 @@ const styles = {
     marginBottom: 28,
     lineHeight: 1.5,
   },
+  errorBox: {
+    padding: '12px 16px',
+    borderRadius: 10,
+    background: '#fef2f2',
+    border: '1px solid #fecaca',
+    color: '#dc2626',
+    fontSize: 13,
+    fontWeight: 500,
+    marginBottom: 20,
+  },
   inputGroup: {
     display: 'flex',
     flexDirection: 'column',
@@ -147,10 +181,21 @@ const styles = {
     boxSizing: 'border-box',
     fontFamily: 'inherit',
   },
-  error: {
-    fontSize: 12,
-    color: '#ef4444',
-    fontWeight: 500,
+  passwordWrap: {
+    position: 'relative',
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#94a3b8',
+    padding: 4,
+    display: 'flex',
+    alignItems: 'center',
   },
   divider: {
     display: 'flex',
@@ -160,11 +205,9 @@ const styles = {
     color: '#94a3b8',
     fontSize: 13,
   },
-  hint: {
-    marginTop: 20,
-    fontSize: 12,
-    color: '#94a3b8',
-    textAlign: 'center',
-    lineHeight: 1.5,
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    background: '#e2e8f0',
   },
 }
